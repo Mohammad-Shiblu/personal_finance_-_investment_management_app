@@ -1,11 +1,29 @@
 
-# Financial Management App - Phase 1 Foundation
+# Financial Management App
 
-A comprehensive financial management web application built with NextJS and PostgreSQL. This is the foundational phase that provides core financial tracking capabilities and is designed to be extended with additional features like notes, calendar, and planning tools.
+A comprehensive personal finance management application built with Next.js 14, PostgreSQL, and Docker. Track income, expenses, investments, and gain financial insights with powerful analytics and calculators.
 
-## 🚀 Live Demo
+## 🚀 Quick Start
 
-The application is now running and available for testing with pre-seeded data.
+### Using Docker (Recommended)
+```bash
+# Start with one command
+docker-compose up -d
+
+# Or use the startup script
+./docker-start.sh
+```
+
+### Manual Setup
+```bash
+yarn install
+yarn prisma generate
+yarn prisma db push
+yarn prisma db seed
+yarn dev
+```
+
+**Access at:** http://localhost:3000
 
 ### Test Credentials
 - **Email**: john@doe.com
@@ -13,22 +31,23 @@ The application is now running and available for testing with pre-seeded data.
 
 ## ✨ Features
 
-### Core Financial Management
-- **Income Tracking**: Record and manage multiple income sources with recurring entry support
-- **Expense Management**: Track expenses with customizable categories and detailed categorization
-- **Investment Portfolio**: Manual entry for ETFs, crypto, stocks, and bonds with performance tracking
-- **CSV Import**: Import transactions from bank statements (processed locally, no cloud storage required)
-- **Financial Calculators**: Compound interest, savings growth, retirement planning, and loan calculators
-- **Analytics & Insights**: Trend analysis, forecasting, and spending pattern insights
-- **Interactive Charts**: Responsive visualizations using Recharts for data analysis
+### Core Features
+- ✅ **Income Tracking** - Multiple sources, recurring income support
+- ✅ **Expense Management** - Customizable categories, detailed tracking
+- ✅ **Category Management** - Create and organize expense categories
+- ✅ **Investment Portfolio** - Track ETFs, crypto, stocks, bonds with performance metrics
+- ✅ **CSV Import** - Import bank statements (processed locally, no cloud storage)
+- ✅ **Financial Calculators** - Compound interest, savings, retirement, loan calculators
+- ✅ **Analytics Dashboard** - Trends, forecasting, spending insights
+- ✅ **Password Reset** - Secure password recovery system
 
-### Technical Features
-- **User Authentication**: Secure email/password authentication with NextAuth.js
-- **Real-time Dashboard**: Financial overview with summary cards and recent transactions
-- **Responsive Design**: Mobile-first design that works on all devices
-- **Data Visualization**: Interactive charts for income vs expenses, category breakdowns, and trends
-- **Local Processing**: CSV files processed in-memory without external storage dependencies
-- **Type Safety**: Full TypeScript implementation with comprehensive type definitions
+### Technical Stack
+- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS, shadcn/ui
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PostgreSQL
+- **Authentication**: NextAuth.js with bcrypt
+- **Deployment**: Docker & Docker Compose
+- **Type Safety**: Full TypeScript implementation
 
 ## 🏗️ Architecture Overview
 
@@ -37,7 +56,7 @@ The application follows a modular architecture pattern similar to Flask/FastAPI 
 ### Backend Structure (NextJS API Routes)
 ```
 lib/
-├── services/          # Business logic layer (equivalent to Flask services)
+├── services/          # Business logic layer
 │   ├── income-service.ts
 │   ├── expense-service.ts
 │   ├── category-service.ts
@@ -45,11 +64,9 @@ lib/
 │   ├── calculator-service.ts
 │   ├── analytics-service.ts
 │   └── csv-import-service.ts
-├── types.ts           # Type definitions (equivalent to models.py)
+├── types.ts           # Type definitions
 ├── db.ts             # Database connection
-├── auth-config.ts    # Authentication configuration
-├── aws-config.ts     # Cloud storage configuration
-└── s3.ts            # File operations
+└── auth-config.ts    # Authentication configuration
 
 app/api/              # REST API endpoints (equivalent to Flask routes)
 ├── income/           # Income management endpoints
@@ -63,11 +80,18 @@ app/api/              # REST API endpoints (equivalent to Flask routes)
 
 ### Frontend Structure
 ```
-app/                  # NextJS 14 App Router pages
+app/                  # Next.js 14 App Router pages
 ├── page.tsx         # Landing page
 ├── layout.tsx       # Root layout
-├── auth/            # Authentication pages
+├── auth/            # Authentication pages (signin, signup, forgot-password, reset-password)
 └── dashboard/       # Protected dashboard pages
+    ├── income/      # Income management
+    ├── expenses/    # Expense tracking
+    ├── categories/  # Category management
+    ├── investments/ # Investment portfolio
+    ├── calculators/ # Financial calculators
+    ├── analytics/   # Analytics dashboard
+    └── import/      # CSV import
 
 components/          # Reusable React components
 ├── ui/              # Base UI components (shadcn/ui)
@@ -89,8 +113,9 @@ User                 # User accounts and authentication
 ## 🛠️ Local Development Setup
 
 ### Prerequisites
-- Node.js 18+ and Yarn package manager
-- PostgreSQL database
+- **Docker & Docker Compose** (recommended) OR
+- **Node.js 18+** and Yarn
+- **PostgreSQL** (if not using Docker)
 
 ### Environment Variables
 Create a `.env` file with the following variables:
@@ -258,38 +283,111 @@ The application includes comprehensive error handling and validation:
 - **Database Constraints**: Data integrity at the database level
 - **TypeScript**: Compile-time type checking
 
-## 🚀 Deployment
+## 🐳 Docker Deployment
 
-### Local Deployment
-The application is designed for easy local deployment:
-
+### Quick Start
 ```bash
-# Build for production
-yarn build
+# Start all services
+docker-compose up -d
 
-# Start production server
-yarn start
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
 ```
 
-### Environment Setup
-1. Set up PostgreSQL database
-2. Configure AWS S3 bucket
-3. Set environment variables
-4. Run database migrations
-5. Seed initial data
+### What's Included
+- Next.js application (optimized production build)
+- PostgreSQL database with persistent storage
+- Automatic database setup and seeding
+- Health checks and auto-restart
+
+See `DOCKER_DEPLOYMENT.md` for complete documentation.
+
+## 🔐 Password Reset
+
+Users can reset forgotten passwords:
+
+1. Click "Forgot password?" on sign-in page
+2. Enter email address
+3. Use the reset link (displayed in development mode)
+4. Set new password
+
+See `PASSWORD_RESET_GUIDE.md` for details.
+
+## 📂 Project Structure
+
+```
+├── app/                    # Next.js pages and API routes
+├── components/             # Reusable React components
+├── lib/                    # Services and utilities
+├── prisma/                 # Database schema and migrations
+├── public/                 # Static assets
+├── Dockerfile              # Docker configuration
+├── docker-compose.yml      # Docker Compose setup
+└── .env                    # Environment variables
+```
+
+## 📚 Documentation
+
+- **QUICK_START.md** - Get started in 5 minutes
+- **DOCKER_DEPLOYMENT.md** - Complete Docker guide
+- **CSV_IMPORT_GUIDE.md** - CSV format and import instructions
+- **PASSWORD_RESET_GUIDE.md** - Password recovery setup
+- **IMPLEMENTATION_SUMMARY.md** - Detailed feature documentation
+- **FEATURES_CHECKLIST.md** - Complete feature list (200+)
+
+## 🔒 Security
+
+- ✅ Secure password hashing (bcrypt)
+- ✅ Session-based authentication
+- ✅ SQL injection prevention (Prisma ORM)
+- ✅ XSS protection (React)
+- ✅ CSRF protection
+- ✅ Password reset with time-limited tokens
+- ✅ User data isolation
 
 ## 📝 License
 
-This project is built as a foundational financial management application designed to be extended and customized for specific use cases.
+MIT License - See LICENSE file for details
 
 ## 🤝 Contributing
 
-The modular architecture and comprehensive comments make it easy to understand and extend the codebase. Each service includes detailed documentation about its purpose, parameters, and business logic.
+Contributions welcome! The codebase includes comprehensive comments explaining all functions and business logic.
 
-## 📞 Support
+## 🐛 Troubleshooting
 
-For questions about the architecture or extending the application, refer to the comprehensive code comments and type definitions throughout the codebase.
+### Docker Issues
+```bash
+# View logs
+docker-compose logs -f
+
+# Restart services
+docker-compose restart
+
+# Clean slate
+docker-compose down -v
+docker-compose up -d --build
+```
+
+### Database Issues
+```bash
+# Reset database
+yarn prisma db push --force-reset
+yarn prisma db seed
+```
+
+## 🎯 Roadmap
+
+- [ ] Email notifications
+- [ ] Budget planning
+- [ ] Bill reminders
+- [ ] Multi-currency support
+- [ ] Mobile app
+- [ ] Bank sync integration
+- [ ] PDF reports
 
 ---
 
-**Phase 1 Foundation Complete** - Ready for extension with additional features and capabilities.
+**Built with ❤️ using Next.js, PostgreSQL, and Docker**
