@@ -7,6 +7,7 @@
 'use client'
 
 import { signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Button } from '../ui/button'
 import {
   DropdownMenu,
@@ -33,6 +34,7 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
   const { toast } = useToast()
+  const router = useRouter()
 
   const handleSignOut = async () => {
     try {
@@ -110,11 +112,11 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
