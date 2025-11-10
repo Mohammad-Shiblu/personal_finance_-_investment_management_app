@@ -18,6 +18,7 @@ export class CategoryService {
     { name: 'Shopping', description: 'Clothes, electronics, and general purchases', color: '#45B7D1', icon: 'ShoppingBag' },
     { name: 'Entertainment', description: 'Movies, games, subscriptions', color: '#96CEB4', icon: 'Gamepad2' },
     { name: 'Bills & Utilities', description: 'Rent, electricity, internet, phone', color: '#FFEAA7', icon: 'Receipt' },
+    { name: 'House Rent', description: 'Monthly house or apartment rent', color: '#FF8C42', icon: 'Home' },
     { name: 'Healthcare', description: 'Medical expenses, insurance, pharmacy', color: '#DDA0DD', icon: 'Heart' },
     { name: 'Education', description: 'Courses, books, training', color: '#98D8C8', icon: 'GraduationCap' },
     { name: 'Travel', description: 'Flights, hotels, vacation expenses', color: '#F7DC6F', icon: 'Plane' },
