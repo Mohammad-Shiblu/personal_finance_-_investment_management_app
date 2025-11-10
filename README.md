@@ -7,11 +7,8 @@ A comprehensive personal finance management application built with Next.js 14, P
 
 ### Using Docker (Recommended)
 ```bash
-# Start with one command
-docker-compose up -d
-
-# Or use the startup script
-./docker-start.sh
+# Deploy with one command
+./docker-deploy.sh
 ```
 
 ### Manual Setup
@@ -46,7 +43,7 @@ yarn dev
 - **Backend**: Next.js API Routes, Prisma ORM
 - **Database**: PostgreSQL
 - **Authentication**: NextAuth.js with bcrypt
-- **Deployment**: Docker & Docker Compose
+- **Deployment**: Docker
 - **Type Safety**: Full TypeScript implementation
 
 ## 🏗️ Architecture Overview
@@ -113,7 +110,7 @@ User                 # User accounts and authentication
 ## 🛠️ Local Development Setup
 
 ### Prerequisites
-- **Docker & Docker Compose** (recommended) OR
+- **Docker** (recommended) OR
 - **Node.js 18+** and Yarn
 - **PostgreSQL** (if not using Docker)
 
@@ -287,23 +284,56 @@ The application includes comprehensive error handling and validation:
 
 ### Quick Start
 ```bash
-# Start all services
-docker-compose up -d
+# Deploy everything
+./docker-deploy.sh
 
 # View logs
-docker-compose logs -f
+docker logs -f financial_app
 
 # Stop services
-docker-compose down
+docker stop financial_app financial_app_db
+
+# Cleanup
+./docker-cleanup.sh
+```
+
+### Manual Docker Commands
+```bash
+# 1. Create network
+docker network create financial_network
+
+# 2. Start PostgreSQL
+docker run -d --name financial_app_db \
+  --network financial_network \
+  -e POSTGRES_USER=financial_user \
+  -e POSTGRES_PASSWORD=mypassword123 \
+  -e POSTGRES_DB=financial_app \
+  -p 5432:5432 \
+  -v financial_db_data:/var/lib/postgresql/data \
+  postgres:15-alpine
+
+# 3. Build app
+docker build -t financial-app .
+
+# 4. Run app
+docker run -d --name financial_app \
+  --network financial_network \
+  -p 3000:3000 \
+  -e DATABASE_URL="postgresql://financial_user:mypassword123@financial_app_db:5432/financial_app" \
+  -e NEXTAUTH_SECRET="RFP1Mg2UMxCzmxcnCsVHoG4gd7fGtH6C" \
+  -e NEXTAUTH_URL="http://localhost:3000" \
+  financial-app
+
+# 5. Setup database
+docker exec financial_app npx prisma db push
+docker exec financial_app npx prisma db seed
 ```
 
 ### What's Included
 - Next.js application (optimized production build)
 - PostgreSQL database with persistent storage
 - Automatic database setup and seeding
-- Health checks and auto-restart
-
-See `DOCKER_DEPLOYMENT.md` for complete documentation.
+- No docker-compose required
 
 ## 🔐 Password Reset
 
@@ -361,14 +391,15 @@ Contributions welcome! The codebase includes comprehensive comments explaining a
 ### Docker Issues
 ```bash
 # View logs
-docker-compose logs -f
+docker logs -f financial_app
 
 # Restart services
-docker-compose restart
+docker restart financial_app financial_app_db
 
 # Clean slate
-docker-compose down -v
-docker-compose up -d --build
+./docker-cleanup.sh
+docker volume rm financial_db_data
+./docker-deploy.sh
 ```
 
 ### Database Issues
