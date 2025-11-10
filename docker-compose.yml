@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: financial_app_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: financial_user
+      POSTGRES_PASSWORD: mypassword123
+      POSTGRES_DB: financial_app
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U financial_user -d financial_app"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: financial_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://financial_user:mypassword123@postgres:5432/financial_app"
+      NEXTAUTH_SECRET: "RFP1Mg2UMxCzmxcnCsVHoG4gd7fGtH6C"
+      NEXTAUTH_URL: "http://localhost:3000"
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "
+        npx prisma db push &&
+        npx prisma db seed &&
+        node server.js
+      "
+
+volumes:
+  postgres_data:
+    driver: local

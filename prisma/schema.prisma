@@ -1,0 +1,187 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// NextAuth.js Required Models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String       @id @default(cuid())
+  name          String?
+  email         String       @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?      // For credentials auth
+  firstName     String?
+  lastName      String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  
+  // Financial data relationships
+  incomes       Income[]
+  expenses      Expense[]
+  categories    Category[]
+  investments   Investment[]
+  transactions  Transaction[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  @@index([email])
+  @@index([token])
+}
+
+// Financial Management Models
+
+/**
+ * Categories for organizing expenses
+ * Users can create custom categories or use system defaults
+ */
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  color       String?   // Hex color code for UI visualization
+  icon        String?   // Lucide icon identifier for UI
+  isDefault   Boolean   @default(false) // System default categories
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses    Expense[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@unique([userId, name])
+}
+
+/**
+ * Income tracking - salaries, freelance, investment returns, etc.
+ * Supports both one-time and recurring income entries
+ */
+model Income {
+  id          String   @id @default(cuid())
+  amount      Decimal  @db.Decimal(15, 2)
+  source      String   // e.g., "Salary", "Freelance", "Investment Returns"
+  description String?
+  date        DateTime
+  isRecurring Boolean  @default(false)
+  frequency   String?  // "monthly", "weekly", "yearly", etc.
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId, date])
+}
+
+/**
+ * Expense tracking with categorization
+ * All expenses must belong to a category for organization
+ */
+model Expense {
+  id          String   @id @default(cuid())
+  amount      Decimal  @db.Decimal(15, 2)
+  description String
+  date        DateTime
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId, date])
+  @@index([categoryId])
+}
+
+/**
+ * Investment portfolio tracking
+ * Supports ETFs, crypto, stocks, bonds with manual price updates
+ */
+model Investment {
+  id              String   @id @default(cuid())
+  name            String   // e.g., "VTSAX", "Bitcoin", "Ethereum"
+  type            String   // "ETF", "Crypto", "Stock", "Bond"
+  symbol          String?  // Ticker symbol or crypto symbol
+  quantity        Decimal  @db.Decimal(20, 8) // High precision for crypto
+  purchasePrice   Decimal  @db.Decimal(15, 2)
+  purchaseDate    DateTime
+  currentPrice    Decimal? @db.Decimal(15, 2) // Updated manually
+  lastPriceUpdate DateTime?
+  notes           String?
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId, type])
+}
+
+/**
+ * Raw transaction imports from CSV files
+ * Serves as a staging area before processing into Income/Expense records
+ */
+model Transaction {
+  id          String   @id @default(cuid())
+  type        String   // "income", "expense"
+  amount      Decimal  @db.Decimal(15, 2)
+  description String
+  date        DateTime
+  category    String?  // Raw category from CSV, might not match our categories
+  source      String?  // Import source identifier (filename, bank name, etc.)
+  imported    Boolean  @default(false)
+  processed   Boolean  @default(false) // Whether it's been converted to Income/Expense
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId, processed])
+  @@index([userId, date])
+}
