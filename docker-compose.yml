@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: financial_app_db
+    environment:
+      POSTGRES_USER: financial_user
+      POSTGRES_PASSWORD: mypassword123
+      POSTGRES_DB: financial_app
+    volumes:
+      - financial_db_data:/var/lib/postgresql/data
+    networks:
+      - financial_network
+    restart: unless-stopped
+
+  app:
+    image: yourusername/financial-app:latest
+    container_name: financial_app
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://financial_user:mypassword123@db:5432/financial_app"
+      NEXTAUTH_SECRET: "RFP1Mg2UMxCzmxcnCsVHoG4gd7fGtH6C"
+      NEXTAUTH_URL: "http://localhost:3000"
+    depends_on:
+      - db
+    networks:
+      - financial_network
+    restart: unless-stopped
+
+volumes:
+  financial_db_data:
+
+networks:
+  financial_network:
+    driver: bridge
